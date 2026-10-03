@@ -1,0 +1,17 @@
+{
+  "name": "dqm6-diary",
+  "version": "1.0.0",
+  "private": true,
+  "description": "マイクラDQM6プレイ日記ブログ（Airtable → 静的サイト）",
+  "scripts": {
+    "build": "node build/build.js",
+    "build:sample": "node build/build.js --fixture fixtures/sample.json",
+    "serve": "npx --yes serve dist"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "sharp": "^0.35.5"
+  }
+}

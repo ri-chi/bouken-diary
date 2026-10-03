@@ -1,0 +1,78 @@
+# Airtableから記事を取得してサイトをビルドし、GitHub Pagesに公開する。
+#
+# 動くタイミング
+#   ・main ブランチに push したとき（デザインやコードを直したとき）
+#   ・毎朝5時（日本時間）の定期実行（Airtableで書いた記事を自動で反映）
+#   ・GitHubの Actions タブから「Run workflow」を押したとき（今すぐ反映したいとき）
+#   ・Airtableのオートメーションなどから repository_dispatch を送ったとき
+name: Build and deploy
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 20 * * *" # UTC 20:00 = 日本時間 5:00
+  workflow_dispatch:
+  repository_dispatch:
+    types: [airtable-update]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同時に複数のデプロイが走らないようにする
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # 変換済みの画像を使い回して、毎回のダウンロードを省く
+      - uses: actions/cache@v4
+        with:
+          path: .cache/images
+          key: images-${{ github.run_id }}
+          restore-keys: images-
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          # 秘密の値：Settings → Secrets and variables → Actions → Secrets
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+          AIRTABLE_BASE_ID: ${{ secrets.AIRTABLE_BASE_ID }}
+          # 秘密ではない値：同じ画面の Variables タブ（未設定なら site.config.js の値）
+          AIRTABLE_TABLE: ${{ vars.AIRTABLE_TABLE }}
+          AIRTABLE_VIEW: ${{ vars.AIRTABLE_VIEW }}
+          SITE_URL: ${{ vars.SITE_URL }}
+          BASE_PATH: ${{ vars.BASE_PATH }}
+          CUSTOM_DOMAIN: ${{ vars.CUSTOM_DOMAIN }}
+          GA_ID: ${{ vars.GA_ID }}
+          ADSENSE_CLIENT: ${{ vars.ADSENSE_CLIENT }}
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

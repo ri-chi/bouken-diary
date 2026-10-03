@@ -1,0 +1,277 @@
+// ページのHTMLテンプレート。元サイトの index.html / article.html のヘッダー・フッター構成を
+// 日記ブログ向けにまとめ直したもの。すべて文字列を返す関数なので、ビルド時にそのまま書き出せる。
+
+const { esc } = require("./render-body");
+
+function createTemplates(config) {
+  const base = config.basePath.endsWith("/") ? config.basePath : `${config.basePath}/`;
+  const url = (p = "") => `${base}${String(p).replace(/^\/+/, "")}`;
+  const absUrl = (p = "") => `${config.siteUrl}${url(p)}`;
+
+  const articlePath = (article) => `articles/${article.slug}/`;
+  const tagPath = (tag) => `tags/${encodeURIComponent(tag)}/`;
+
+  function formatDate(raw) {
+    const date = new Date(raw);
+    if (!raw || Number.isNaN(date.getTime())) return "";
+    return new Intl.DateTimeFormat("ja-JP", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      timeZone: "Asia/Tokyo",
+    }).format(date);
+  }
+
+  function isoDate(raw) {
+    const date = new Date(raw);
+    return !raw || Number.isNaN(date.getTime()) ? "" : date.toISOString();
+  }
+
+  // ---------- 共通パーツ ----------
+
+  function analyticsTags() {
+    let html = "";
+    if (config.gaId) {
+      html += `
+    <script async src="https://www.googletagmanager.com/gtag/js?id=${esc(config.gaId)}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '${esc(config.gaId)}');
+    </script>`;
+    }
+    if (config.adsenseClient) {
+      html += `
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${esc(config.adsenseClient)}" crossorigin="anonymous"></script>`;
+    }
+    return html;
+  }
+
+  function header() {
+    return `
+    <header class="site-header">
+      <a class="site-title" href="${url()}">${esc(config.siteName)}</a>
+      <nav class="site-nav" aria-label="サイト内">
+        <a href="${url()}">日記一覧</a>
+        <a href="${url("about/")}">このブログについて</a>
+      </nav>
+    </header>`;
+  }
+
+  function footer() {
+    const year = new Date().getFullYear();
+    return `
+    <footer class="site-footer">
+      <nav class="footer-links" aria-label="サイト情報">
+        <a href="${url("about/")}">このブログについて</a>
+        <a href="${url("privacy/")}">プライバシーポリシー</a>
+        <a href="${url("contact/")}">お問い合わせ</a>
+      </nav>
+      <p class="footer-note">このブログはファンによる非公式のプレイ日記です。ドラゴンクエストはスクウェア・エニックスの登録商標です。</p>
+      <p class="footer-copy">© ${year} ${esc(config.siteName)}</p>
+    </footer>`;
+  }
+
+  function layout({ title, description, path, ogImage, ogType = "website", content, scripts = [], noindex = false }) {
+    const fullTitle = title ? `${title}｜${config.siteName}` : config.siteName;
+    const desc = description || config.description;
+    const image = ogImage ? `${config.siteUrl}${ogImage}` : "";
+    const scriptTags = scripts.map((s) => `<script src="${url(s)}" defer></script>`).join("\n    ");
+
+    return `<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${esc(fullTitle)}</title>
+    <meta name="description" content="${esc(desc)}" />
+    ${noindex ? '<meta name="robots" content="noindex" />' : `<link rel="canonical" href="${esc(absUrl(path))}" />`}
+    <meta property="og:site_name" content="${esc(config.siteName)}" />
+    <meta property="og:title" content="${esc(fullTitle)}" />
+    <meta property="og:description" content="${esc(desc)}" />
+    <meta property="og:type" content="${ogType}" />
+    <meta property="og:url" content="${esc(absUrl(path))}" />
+    ${image ? `<meta property="og:image" content="${esc(image)}" />\n    <meta name="twitter:card" content="summary_large_image" />` : '<meta name="twitter:card" content="summary" />'}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="${url("assets/style.css")}" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗡️</text></svg>" />
+    ${analyticsTags()}
+    ${scriptTags}
+  </head>
+  <body>
+    <a class="skip-link" href="#main">本文へ移動</a>
+    ${header()}
+    <main id="main">
+${content}
+    </main>
+    ${footer()}
+  </body>
+</html>
+`;
+  }
+
+  function dayLabel(article) {
+    return article.day !== null && article.day !== undefined ? `${article.day}日目` : "番外編";
+  }
+
+  function tagLinks(tags) {
+    if (!tags || !tags.length) return "";
+    return `<ul class="tag-list">${tags
+      .map((t) => `<li><a href="${url(tagPath(t))}">${esc(t)}</a></li>`)
+      .join("")}</ul>`;
+  }
+
+  // ---------- 一覧 ----------
+
+  function entryItem(article) {
+    const img = article.topImage || (article.gallery && article.gallery[0]);
+    const thumb = img
+      ? `<img src="${esc(img.thumb)}" width="${img.thumbWidth}" height="${img.thumbHeight}" alt="" loading="lazy" decoding="async" />`
+      : `<span class="entry-thumb-empty" aria-hidden="true">${esc(dayLabel(article))}</span>`;
+
+    return `
+        <li class="entry" data-slug="${esc(article.slug)}">
+          <a class="entry-link" href="${url(articlePath(article))}">
+            <span class="entry-thumb">${thumb}</span>
+            <span class="entry-text">
+              <span class="entry-day">${esc(dayLabel(article))}</span>
+              <span class="entry-title">${esc(article.title)}</span>
+              ${article.excerpt ? `<span class="entry-excerpt">${esc(article.excerpt)}</span>` : ""}
+              <time class="entry-date" datetime="${isoDate(article.publishedAt)}">${formatDate(article.publishedAt)}</time>
+            </span>
+          </a>
+        </li>`;
+  }
+
+  function entryList(articles) {
+    return `<ol class="entry-list" id="entry-list">${articles.map(entryItem).join("")}
+      </ol>`;
+  }
+
+  function indexPage({ articles, tags }) {
+    const newestFirst = [...articles].reverse();
+    const latest = newestFirst[0];
+
+    const content = `
+      <section class="intro">
+        <div class="msg-window">
+          <p>${esc(config.description)}</p>
+          ${latest ? `<p class="intro-latest">さいしんの日記：<a href="${url(articlePath(latest))}">${esc(dayLabel(latest))}「${esc(latest.title)}」</a></p>` : ""}
+          ${articles.length ? `<p class="intro-start"><a href="${url(articlePath(articles[0]))}">▶ 1日目から読む</a></p>` : ""}
+        </div>
+      </section>
+
+      <section class="list-section" aria-labelledby="list-heading">
+        <div class="list-head">
+          <h1 id="list-heading">日記一覧</h1>
+          <div class="search">
+            <label for="search-input">日記をさがす</label>
+            <input id="search-input" type="search" placeholder="モンスター名・アイテム名など" autocomplete="off" />
+          </div>
+        </div>
+        ${tags.length ? `<nav class="tag-nav" aria-label="タグ">${tagLinks(tags.map((t) => t.name))}</nav>` : ""}
+        <p class="search-status" id="search-status" aria-live="polite"></p>
+        ${articles.length ? entryList(newestFirst) : '<p class="empty">まだ公開された日記はありません。Airtableで visible にチェックを入れると、次のビルドでここに並びます。</p>'}
+      </section>`;
+
+    return layout({ path: "", content, scripts: ["assets/search.js"] });
+  }
+
+  function tagPage({ tag, articles }) {
+    const content = `
+      <section class="list-section">
+        <p class="breadcrumb"><a href="${url()}">日記一覧</a> ／ タグ</p>
+        <h1>「${esc(tag)}」の日記 <span class="count">${articles.length}件</span></h1>
+        ${entryList([...articles].reverse())}
+      </section>`;
+    return layout({
+      title: `「${tag}」の日記`,
+      description: `${config.siteName}の「${tag}」に関する日記の一覧です。`,
+      path: tagPath(tag),
+      content,
+    });
+  }
+
+  // ---------- 記事 ----------
+
+  function pagerLink(article, rel, label) {
+    if (!article) return `<span class="pager-empty"></span>`;
+    return `<a class="pager-link pager-${rel}" rel="${rel}" href="${url(articlePath(article))}">
+            <span class="pager-label">${label}</span>
+            <span class="pager-title">${esc(dayLabel(article))}「${esc(article.title)}」</span>
+          </a>`;
+  }
+
+  function articlePage({ article, bodyHtml, tocHtml, galleryHtml, prev, next }) {
+    const hero = article.topImage
+      ? `<figure class="article-hero"><img src="${esc(article.topImage.src)}" width="${article.topImage.width}" height="${article.topImage.height}" alt="" decoding="async" fetchpriority="high" /></figure>`
+      : "";
+
+    const meta = [
+      `<time datetime="${isoDate(article.publishedAt)}">${formatDate(article.publishedAt)}</time>`,
+      article.modVersion ? `<span>DQM6 ${esc(article.modVersion)}</span>` : "",
+    ]
+      .filter(Boolean)
+      .join("");
+
+    const content = `
+      <article class="article">
+        <header class="article-header msg-window">
+          <p class="article-day">${esc(dayLabel(article))}</p>
+          <h1 class="article-title">${esc(article.title)}</h1>
+          <p class="article-meta">${meta}</p>
+        </header>
+        ${tagLinks(article.tags)}
+        ${hero}
+        ${tocHtml}
+        <div class="body">
+${bodyHtml || '<p class="empty">本文がまだありません。Airtableの body 列に書くとここに表示されます。</p>'}
+        </div>
+        ${galleryHtml}
+        <nav class="pager" aria-label="前後の日記">
+          ${pagerLink(prev, "prev", "◀ まえの日")}
+          ${pagerLink(next, "next", "つぎの日 ▶")}
+        </nav>
+      </article>`;
+
+    return layout({
+      title: `${dayLabel(article)}「${article.title}」`,
+      description: article.excerpt,
+      path: articlePath(article),
+      ogImage: article.topImage ? article.topImage.src : article.gallery[0] && article.gallery[0].src,
+      ogType: "article",
+      content,
+      scripts: ["assets/caption.js"],
+    });
+  }
+
+  // ---------- 固定ページ ----------
+
+  function staticPage({ slug, title, html }) {
+    const content = `
+      <article class="article static-page">
+        <h1 class="static-title">${esc(title)}</h1>
+        <div class="body">
+${html}
+        </div>
+      </article>`;
+    return layout({ title, path: `${slug}/`, content });
+  }
+
+  function notFoundPage() {
+    const content = `
+      <section class="not-found msg-window">
+        <p>しかし ページは みつからなかった！</p>
+        <p>URLが変わったか、削除された可能性があります。</p>
+        <p><a href="${url()}">▶ 日記一覧へもどる</a></p>
+      </section>`;
+    return layout({ title: "ページが見つかりません", path: "404.html", content, noindex: true });
+  }
+
+  return { indexPage, tagPage, articlePage, staticPage, notFoundPage, articlePath, tagPath, url, absUrl };
+}
+
+module.exports = { createTemplates };

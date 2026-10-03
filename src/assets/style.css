@@ -1,0 +1,634 @@
+/* =========================================================
+   DQM6 冒険日記
+   主役はドラクエ風の「メッセージウィンドウ」。それ以外は静かに。
+   ========================================================= */
+
+:root {
+  --paper: #eef2ec;      /* 背景：うすい苔色のグレー */
+  --surface: #ffffff;
+  --ink: #263228;        /* 本文 */
+  --muted: #5e6b60;      /* 補足・日付 */
+  --line: #c9d3c5;
+  --grass: #356b2b;      /* リンク：草ブロックの緑 */
+  --gold: #e6b437;       /* 日目バッジ・カーソル */
+  --window: #000000;     /* メッセージウィンドウ */
+  --window-text: #ffffff;
+
+  --font-body: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+  --font-pixel: "DotGothic16", "Zen Kaku Gothic New", monospace;
+
+  --measure: 40rem;      /* 本文の行長（日本語で約40字） */
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.9;
+  letter-spacing: 0.02em;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+a {
+  color: var(--grass);
+  text-underline-offset: 0.2em;
+}
+
+a:focus-visible,
+input:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+}
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+  z-index: 10;
+  background: var(--surface);
+  padding: 0.5rem 1rem;
+}
+
+main {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+/* ---------- メッセージウィンドウ（このサイトの顔） ---------- */
+
+.msg-window {
+  background: var(--window);
+  color: var(--window-text);
+  border: 3px solid var(--window-text);
+  border-radius: 10px;
+  box-shadow: 0 0 0 4px var(--window);
+  padding: 1.1rem 1.4rem;
+  font-family: var(--font-pixel);
+  line-height: 1.8;
+  letter-spacing: 0.06em;
+}
+
+.msg-window a {
+  color: var(--window-text);
+}
+
+.msg-window a:hover {
+  color: var(--gold);
+}
+
+.msg-window p {
+  margin: 0;
+}
+
+.msg-window p + p {
+  margin-top: 0.6em;
+}
+
+/* ---------- ヘッダー・フッター ---------- */
+
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 1.25rem 1.25rem 0;
+}
+
+.site-title {
+  font-family: var(--font-pixel);
+  font-size: 1.5rem;
+  color: var(--ink);
+  text-decoration: none;
+  letter-spacing: 0.08em;
+}
+
+.site-nav {
+  display: flex;
+  gap: 1.25rem;
+  font-size: 0.9rem;
+}
+
+.site-nav a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.site-nav a:hover {
+  color: var(--grass);
+}
+
+.site-footer {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 0 1.25rem 3rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.site-footer::before {
+  content: "";
+  display: block;
+  border-top: 1px solid var(--line);
+  margin-bottom: 2rem;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+}
+
+.footer-links a {
+  color: var(--muted);
+}
+
+.footer-note,
+.footer-copy {
+  margin: 0.75rem 0 0;
+  line-height: 1.7;
+}
+
+/* ---------- トップ ---------- */
+
+.intro {
+  margin-bottom: 3rem;
+}
+
+.intro-latest,
+.intro-start {
+  font-size: 0.95rem;
+}
+
+.intro-start a {
+  text-decoration: none;
+}
+
+.list-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.list-head h1,
+.list-section h1 {
+  font-family: var(--font-pixel);
+  font-weight: 400;
+  font-size: 1.6rem;
+  margin: 0;
+  letter-spacing: 0.06em;
+}
+
+.count {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.search {
+  display: grid;
+  gap: 0.25rem;
+  flex: 0 1 18rem;
+}
+
+.search label {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.search input {
+  font: inherit;
+  font-size: 0.95rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.search-status {
+  min-height: 1.5em;
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.breadcrumb {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+}
+
+.empty {
+  color: var(--muted);
+}
+
+/* タグ */
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+}
+
+.tag-list a {
+  display: inline-block;
+  padding: 0.15rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 0.85rem;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.tag-list a:hover {
+  border-color: var(--grass);
+  color: var(--grass);
+}
+
+/* 日記一覧：日付順のリスト。カードの格子ではなく、日記帳の行として並べる */
+.entry-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+
+.entry {
+  border-bottom: 1px solid var(--line);
+}
+
+.entry-link {
+  display: grid;
+  grid-template-columns: 12rem 1fr;
+  gap: 1.25rem;
+  padding: 1.25rem 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.entry-thumb img,
+.entry-thumb-empty {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 4px;
+  background: var(--line);
+}
+
+.entry-thumb-empty {
+  display: grid;
+  place-items: center;
+  font-family: var(--font-pixel);
+  color: var(--muted);
+}
+
+.entry-text {
+  display: grid;
+  align-content: start;
+  gap: 0.2rem;
+}
+
+.entry-day {
+  justify-self: start;
+  font-family: var(--font-pixel);
+  font-size: 0.85rem;
+  background: var(--gold);
+  color: var(--window);
+  padding: 0 0.5rem;
+  border-radius: 3px;
+}
+
+.entry-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+.entry-link:hover .entry-title {
+  color: var(--grass);
+  text-decoration: underline;
+}
+
+.entry-excerpt {
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.entry-date {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* ---------- 記事 ---------- */
+
+.article {
+  max-width: var(--measure);
+  margin: 0 auto;
+}
+
+.article-header {
+  margin-bottom: 1.5rem;
+}
+
+.article-day {
+  color: var(--gold);
+  font-size: 0.95rem;
+}
+
+.article-title {
+  font-weight: 400;
+  font-size: clamp(1.4rem, 4vw, 1.9rem);
+  line-height: 1.5;
+  margin: 0.2rem 0 0.4rem;
+}
+
+.article-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.25rem;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.article-hero {
+  margin: 0 0 2rem;
+}
+
+.article-hero img {
+  width: 100%;
+  border-radius: 4px;
+}
+
+.static-title {
+  font-family: var(--font-pixel);
+  font-weight: 400;
+  font-size: 1.6rem;
+}
+
+/* 目次 */
+.toc {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  margin: 0 0 2rem;
+  font-size: 0.92rem;
+}
+
+.toc-title {
+  margin: 0 0 0.4rem;
+  font-weight: 700;
+}
+
+.toc ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.toc-h3 {
+  margin-left: 1rem;
+  list-style: circle;
+}
+
+/* 本文 */
+.body {
+  font-size: 1.05rem;
+}
+
+.body p {
+  margin: 0 0 1.4em;
+}
+
+.body h2 {
+  font-size: 1.35rem;
+  line-height: 1.5;
+  margin: 2.5em 0 0.8em;
+  padding-bottom: 0.3em;
+  border-bottom: 2px solid var(--ink);
+}
+
+.body h3 {
+  font-size: 1.12rem;
+  margin: 2em 0 0.6em;
+}
+
+.body ul {
+  margin: 0 0 1.4em;
+  padding-left: 1.4em;
+}
+
+.body li + li {
+  margin-top: 0.3em;
+}
+
+.md-italic {
+  font-style: italic;
+}
+
+/* >>囲み<< は、そのままドラクエのメッセージウィンドウにする */
+.body .body-boxed-note {
+  background: var(--window);
+  color: var(--window-text);
+  border: 3px solid var(--window-text);
+  border-radius: 10px;
+  box-shadow: 0 0 0 4px var(--window);
+  padding: 1rem 1.25rem;
+  margin: 2em 4px;
+  font-family: var(--font-pixel);
+  letter-spacing: 0.06em;
+  line-height: 1.8;
+}
+
+.body .body-boxed-note a {
+  color: var(--window-text);
+}
+
+/* >注釈< は小さく控えめに */
+.body .body-aside-note {
+  font-size: 0.88rem;
+  color: var(--muted);
+  border-left: 3px solid var(--line);
+  padding-left: 0.8rem;
+}
+
+/* 写真 */
+.inline-photo {
+  margin: 0 0 1.5em;
+}
+
+.inline-photo img {
+  width: 100%;
+  border-radius: 4px;
+}
+
+.inline-photo-block {
+  margin: 0 0 1.75em;
+}
+
+.inline-photo-block .inline-photo {
+  margin-bottom: 0.5em;
+}
+
+.body .inline-photo-caption {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.6;
+}
+
+.body .inline-photo-caption.is-multiline {
+  text-align: left;
+}
+
+/* ギャラリー */
+.gallery {
+  margin: 3rem 0 0;
+}
+
+.gallery-title {
+  font-size: 1rem;
+  margin: 0 0 0.75rem;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 0.5rem;
+}
+
+.gallery-grid img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 3px;
+}
+
+/* 前後の日記：ドラクエのコマンド選択風。フォーカス時に ▶ が金色になる */
+.pager {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 3.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.pager-link {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.pager-next {
+  text-align: right;
+}
+
+.pager-label {
+  font-family: var(--font-pixel);
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.pager-title {
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.pager-link:hover,
+.pager-link:focus-visible {
+  background: var(--window);
+  color: var(--window-text);
+  border-color: var(--window);
+}
+
+.pager-link:hover .pager-label,
+.pager-link:focus-visible .pager-label {
+  color: var(--gold);
+}
+
+/* 404 */
+.not-found {
+  max-width: var(--measure);
+  margin: 2rem auto;
+}
+
+/* ---------- スマホ ---------- */
+
+@media (max-width: 600px) {
+  main {
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  .entry-link {
+    grid-template-columns: 7.5rem 1fr;
+    gap: 0.9rem;
+  }
+
+  .entry-excerpt {
+    display: none;
+  }
+
+  .search {
+    flex-basis: 100%;
+  }
+
+  .entry-title {
+    font-size: 1rem;
+  }
+
+  .pager {
+    grid-template-columns: 1fr;
+  }
+
+  .pager-next {
+    text-align: left;
+  }
+
+  .msg-window,
+  .body .body-boxed-note {
+    padding: 0.9rem 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
