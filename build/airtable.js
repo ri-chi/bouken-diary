@@ -88,10 +88,11 @@ function normalizeRecord(record) {
   const fields = record.fields || {};
   const day = toNumberOrNull(findFieldValue(fields, ["day", "日目", "プレイ日数"]));
 
-  // slugが空なら day から作る。dayもなければレコードIDを使う。
-  let slug = sanitizeSlug(findFieldValue(fields, ["slug"]));
-  if (!slug && day !== null) slug = `day-${String(day).padStart(3, "0")}`;
-  if (!slug) slug = sanitizeSlug(record.id);
+  // シリーズ（Single select）。空ならシリーズに属さない単発の記事として扱う。
+  const series = String(findFieldValue(fields, ["series", "シリーズ"]) || "").trim();
+
+  // slugが空のときの自動生成は、シリーズ設定を使うので fetchArticles 側で行う。
+  const slug = sanitizeSlug(findFieldValue(fields, ["slug"]));
 
   // Airtableはチェックが外れたチェックボックスを返さないので、無い＝非公開として扱う。
   const visible = Boolean(findFieldValue(fields, ["visible", "公開"]));
@@ -100,6 +101,7 @@ function normalizeRecord(record) {
     id: record.id,
     title: String(findFieldValue(fields, ["title", "タイトル"]) || "タイトル未設定"),
     slug,
+    series,
     day,
     publishedAt:
       findFieldValue(fields, ["publishedAt", "published at", "date", "公開日"]) ||
@@ -194,7 +196,22 @@ function sortKey(article) {
 }
 
 // 公開記事を古い順（第1話→最新話）で返す。
-async function fetchArticles({ fixture } = {}) {
+// slugが空の記事にURLを割り当てる。
+//   シリーズ＋日目あり → 「シリーズのslug-day-001」（例: dqm6-day-001）
+//   日目だけあり       → 「day-001」
+//   どちらもない       → レコードID
+function fillSlug(article, seriesConfig) {
+  if (article.slug) return;
+  const seriesSlug = sanitizeSlug(seriesConfig[article.series] && seriesConfig[article.series].slug);
+  if (article.day !== null) {
+    const daySlug = `day-${String(article.day).padStart(3, "0")}`;
+    article.slug = seriesSlug ? `${seriesSlug}-${daySlug}` : daySlug;
+  } else {
+    article.slug = sanitizeSlug(article.id);
+  }
+}
+
+async function fetchArticles({ fixture, seriesConfig = {} } = {}) {
   let records;
   if (fixture) {
     console.log(`  サンプルデータを使用: ${fixture}`);
@@ -211,6 +228,7 @@ async function fetchArticles({ fixture } = {}) {
   if (hidden) console.log(`  非公開（visible未チェック）の記事: ${hidden}件はスキップ`);
 
   const articles = all.filter((a) => a.visible);
+  articles.forEach((a) => fillSlug(a, seriesConfig));
 
   // slugの重複はURLが衝突するので、後から来た方に番号を付けて警告する。
   const used = new Set();

@@ -1,26 +1,76 @@
 {
   "records": [
     {
+      "id": "recSample0000",
+      "createdTime": "2026-09-30T10:00:00.000Z",
+      "fields": {
+        "title": "ブログをはじめました",
+        "slug": "hello",
+        "publishedAt": "2026-09-30",
+        "tags": [
+          "お知らせ"
+        ],
+        "excerpt": "ぼうけん日記をはじめました。このブログで書いていくことを紹介します。",
+        "visible": true,
+        "body": "ゲームや気になったことを、のんびり記録していくブログをはじめました。\n\n## まずはマイクラから\n\n最初の連載は、マイクラのドラクエMOD「DQM6」のプレイ日記です。[1日目はこちら](/articles/dqm6-day-001/)。"
+      }
+    },
+    {
       "id": "recSample0001",
       "createdTime": "2026-10-01T10:00:00.000Z",
       "fields": {
         "title": "はじめての冒険、スライムが仲間になった",
-        "slug": "day-001",
         "day": 1,
         "publishedAt": "2026-10-01",
         "mod_version": "0.28.50",
-        "tags": ["序盤", "仲間"],
+        "tags": [
+          "序盤",
+          "仲間"
+        ],
         "excerpt": "DQM6を入れて初ログイン。草原で出会ったスライムが、なんと起き上がって仲間になりたそうにこちらを見ている！",
         "visible": true,
-        "top image": [{ "id": "attTop0001", "url": "images/grass.png", "filename": "grass.png" }],
-        "image 1": [{ "id": "attImg0101", "url": "images/sky.png", "filename": "sky.png" }],
-        "image 2": [{ "id": "attImg0201", "url": "images/slime.png", "filename": "slime.png" }],
-        "image 3": [
-          { "id": "attImg0301", "url": "images/night.png", "filename": "night.png" },
-          { "id": "attImg0302", "url": "images/lava.png", "filename": "lava.png" }
+        "top image": [
+          {
+            "id": "attTop0001",
+            "url": "images/grass.png",
+            "filename": "grass.png"
+          }
         ],
-        "image 4": [{ "id": "attImg0401", "url": "images/sand.png", "filename": "sand.png" }],
-        "body": "DQM6を導入して、ついに初ログイン。最初に目に入ったのは見渡すかぎりの草原でした。\n\n【写真1】>スポーン地点。空がきれい<\n\n## まずは拠点づくり\n\nとりあえず木を切って、簡単な小屋を建てました。iron_ingot と gold_ingot はまだ持っていないので、道具は石で我慢。\n\n- 木材を集める\n- 作業台を作る\n- **石の剣**を作る\n\n## スライムとの出会い\n\n夕方、草原を歩いていたら青いスライムが。倒したら起き上がって……\n\n>>スライムが おきあがり\nなかまに なりたそうに こちらをみている！<<\n\n【写真2】>>名前は「ぷるん」にしました<<\n\n>仲間にできる確率は、プレイ環境によって違うかもしれません<\n\n## 夜になった\n\n夜はモンスターが強くなるので、小屋に避難しました。【写真3】ぷるんと一緒に朝を待ちます。\n\n詳しい導入方法は[公式サイト](https://example.com)を見てください。次の日の話は[2日目](/articles/day-002/)へ。"
+        "image 1": [
+          {
+            "id": "attImg0101",
+            "url": "images/sky.png",
+            "filename": "sky.png"
+          }
+        ],
+        "image 2": [
+          {
+            "id": "attImg0201",
+            "url": "images/slime.png",
+            "filename": "slime.png"
+          }
+        ],
+        "image 3": [
+          {
+            "id": "attImg0301",
+            "url": "images/night.png",
+            "filename": "night.png"
+          },
+          {
+            "id": "attImg0302",
+            "url": "images/lava.png",
+            "filename": "lava.png"
+          }
+        ],
+        "image 4": [
+          {
+            "id": "attImg0401",
+            "url": "images/sand.png",
+            "filename": "sand.png"
+          }
+        ],
+        "body": "DQM6を導入して、ついに初ログイン。最初に目に入ったのは見渡すかぎりの草原でした。\n\n【写真1】>スポーン地点。空がきれい<\n\n## まずは拠点づくり\n\nとりあえず木を切って、簡単な小屋を建てました。iron_ingot と gold_ingot はまだ持っていないので、道具は石で我慢。\n\n- 木材を集める\n- 作業台を作る\n- **石の剣**を作る\n\n## スライムとの出会い\n\n夕方、草原を歩いていたら青いスライムが。倒したら起き上がって……\n\n>>スライムが おきあがり\nなかまに なりたそうに こちらをみている！<<\n\n【写真2】>>名前は「ぷるん」にしました<<\n\n>仲間にできる確率は、プレイ環境によって違うかもしれません<\n\n## 夜になった\n\n夜はモンスターが強くなるので、小屋に避難しました。【写真3】ぷるんと一緒に朝を待ちます。\n\n詳しい導入方法は[公式サイト](https://example.com)を見てください。次の日の話は[2日目](/articles/dqm6-day-002/)へ。",
+        "series": "マイクラDQM6編"
       }
     },
     {
@@ -34,8 +84,15 @@
         "tags": "配合, 序盤",
         "excerpt": "地図を持たずに出かけたら砂漠で迷子に。帰り道で2匹目の仲間ができ、ついに配合を試してみました。",
         "visible": true,
-        "image 1": [{ "id": "attImg1101", "url": "images/sand.png", "filename": "sand.png" }],
-        "body": "今日は遠出をしてみることに。\n\n【写真1】\n\n## 配合を試す\n\n*はじめての配合*はドキドキします。【写真5】は撮り忘れました。"
+        "image 1": [
+          {
+            "id": "attImg1101",
+            "url": "images/sand.png",
+            "filename": "sand.png"
+          }
+        ],
+        "body": "今日は遠出をしてみることに。\n\n【写真1】\n\n## 配合を試す\n\n*はじめての配合*はドキドキします。【写真5】は撮り忘れました。",
+        "series": "マイクラDQM6編"
       }
     },
     {

@@ -249,6 +249,60 @@ main {
   color: var(--muted);
 }
 
+/* トップのシリーズ案内 */
+.intro-series {
+  margin-top: 1rem;
+  padding-top: 0.9rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.4);
+  font-size: 0.95rem;
+}
+
+.intro-series p + p {
+  margin-top: 0.2em;
+}
+
+.intro-series-name {
+  font-size: 1.1rem;
+  color: var(--gold);
+}
+
+.intro-series-name a {
+  color: var(--gold);
+}
+
+.intro-series a,
+.series-links a {
+  text-decoration: none;
+}
+
+.intro-series a:hover,
+.series-links a:hover {
+  text-decoration: underline;
+}
+
+/* シリーズページ */
+.series-head {
+  margin: 0.5rem 0 1.5rem;
+}
+
+.list-section .series-title {
+  font-size: 1.5rem;
+  margin: 0 0 0.6rem;
+  color: var(--gold);
+}
+
+.series-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.5rem;
+}
+
+.series-count {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+}
+
 /* タグ */
 .tag-list {
   display: flex;
@@ -318,6 +372,18 @@ main {
   gap: 0.2rem;
 }
 
+.entry-labels {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.6rem;
+}
+
+.entry-series {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
 .entry-day {
   justify-self: start;
   font-family: var(--font-pixel);
@@ -362,8 +428,19 @@ main {
 }
 
 .article-day {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1rem;
   color: var(--gold);
   font-size: 0.95rem;
+}
+
+.article-day a {
+  color: var(--gold);
+}
+
+.article-day a:hover {
+  color: var(--window-text);
 }
 
 .article-title {

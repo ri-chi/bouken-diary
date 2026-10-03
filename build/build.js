@@ -64,6 +64,32 @@ function groupTags(articles) {
     });
 }
 
+// 記事をシリーズごとにまとめる（古い順のまま）。シリーズなしはキー "" に入る。
+function groupSeries(articles) {
+  const map = new Map();
+  for (const article of articles) {
+    const key = article.series || "";
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(article);
+  }
+  return map;
+}
+
+// シリーズページを作る対象を並べる。site.config.js に書いた順、その後は更新が新しい順。
+function orderSeries(bySeries) {
+  const order = Object.keys(config.series || {});
+  const list = [...bySeries.entries()]
+    .filter(([name]) => name)
+    .map(([name, articles]) => ({ name, articles }));
+  const latestTime = (s) => Date.parse(s.articles[s.articles.length - 1].publishedAt) || 0;
+  return list.sort((a, b) => {
+    const ia = order.indexOf(a.name);
+    const ib = order.indexOf(b.name);
+    if (ia !== -1 || ib !== -1) return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+    return latestTime(b) - latestTime(a);
+  });
+}
+
 // src/pages/*.html を固定ページとして読み込む。1行目の <!-- title: ... --> をタイトルに使う。
 async function loadStaticPages() {
   const dir = path.join(SRC_DIR, "pages");
@@ -98,7 +124,7 @@ async function main() {
   const renderer = createBodyRenderer({ basePath: config.basePath });
 
   console.log("▶ 記事を取得しています");
-  const rawArticles = await fetchArticles({ fixture: args.fixture });
+  const rawArticles = await fetchArticles({ fixture: args.fixture, seriesConfig: config.series || {} });
   console.log(`  公開記事: ${rawArticles.length}件`);
 
   console.log("▶ 出力フォルダを準備しています");
@@ -116,14 +142,20 @@ async function main() {
   console.log("▶ ページを書き出しています");
   const sitemap = [{ path: "", lastmod: "" }];
 
-  // 記事ページ（前後リンク付き）
-  articles.forEach((article, i) => {
+  // 前後リンクは同じシリーズの中でつなぐ（シリーズなしの記事どうしは、シリーズなしの中でつなぐ）
+  const bySeries = groupSeries(articles);
+  for (const list of bySeries.values()) {
+    list.forEach((article, i) => {
+      article.prev = list[i - 1] || null;
+      article.next = list[i + 1] || null;
+    });
+  }
+
+  for (const article of articles) {
     const { html, headings } = renderer.buildBodyHtml(article);
     article.renderedBody = html;
     article.headings = headings;
-    article.prev = articles[i - 1] || null;
-    article.next = articles[i + 1] || null;
-  });
+  }
 
   for (const article of articles) {
     const page = templates.articlePage({
@@ -148,8 +180,16 @@ async function main() {
     sitemap.push({ path: urlPath });
   }
 
+  // シリーズページ
+  const seriesList = orderSeries(bySeries);
+  for (const series of seriesList) {
+    const urlPath = templates.seriesPath(series.name);
+    await writePage(toFilePath(urlPath), templates.seriesPage(series));
+    sitemap.push({ path: urlPath });
+  }
+
   // トップページ
-  await writePage("index.html", templates.indexPage({ articles, tags }));
+  await writePage("index.html", templates.indexPage({ articles, tags, seriesList }));
 
   // 固定ページ（about / privacy / contact）
   for (const page of await loadStaticPages()) {
@@ -165,6 +205,7 @@ async function main() {
   const searchIndex = articles.map((a) => ({
     slug: a.slug,
     title: a.title,
+    series: a.series,
     tags: a.tags,
     text: `${a.excerpt} ${bodyToPlainText(a.body)}`.trim(),
   }));

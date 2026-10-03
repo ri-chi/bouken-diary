@@ -21,7 +21,7 @@
         })
         .then((data) => {
           index = new Map(
-            data.map((a) => [a.slug, [a.title, (a.tags || []).join(" "), a.text].join("\n").toLowerCase()])
+            data.map((a) => [a.slug, [a.title, a.series || "", (a.tags || []).join(" "), a.text].join("\n").toLowerCase()])
           );
           return index;
         });
@@ -56,8 +56,8 @@
         if (hit) count += 1;
       });
       status.textContent = count
-        ? `「${query}」が出てくる日記：${count}件`
-        : `「${query}」が出てくる日記はありません。別の言葉でさがしてみてください。`;
+        ? `「${query}」が出てくる記事：${count}件`
+        : `「${query}」が出てくる記事はありません。別の言葉でさがしてみてください。`;
     } catch (error) {
       status.textContent = "検索データを読み込めませんでした。ページを再読み込みしてください。";
     }
