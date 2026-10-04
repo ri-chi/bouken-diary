@@ -211,7 +211,29 @@ function fillSlug(article, seriesConfig) {
   }
 }
 
-async function fetchArticles({ fixture, seriesConfig = {} } = {}) {
+// 予約投稿：publishedAt が未来の記事は、その日（時刻があればその時刻）が来るまで公開しない。
+//   日付だけ（2026-10-10）なら、日本時間でその日になったら公開
+//   時刻つき（2026-10-10T19:00:00.000Z）なら、その時刻を過ぎたら公開
+//   publishedAt が空・読めない場合は、すぐ公開
+function isReleased(article, now = new Date()) {
+  const raw = String(article.publishedAt || "").trim();
+  if (!raw) return true;
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    const todayJst = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Tokyo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(now); // "2026-10-04" の形
+    return raw <= todayJst;
+  }
+
+  const time = Date.parse(raw);
+  return Number.isNaN(time) ? true : time <= now.getTime();
+}
+
+async function fetchArticles({ fixture, seriesConfig = {}, now = new Date() } = {}) {
   let records;
   if (fixture) {
     console.log(`  サンプルデータを使用: ${fixture}`);
@@ -227,7 +249,18 @@ async function fetchArticles({ fixture, seriesConfig = {} } = {}) {
   const hidden = all.filter((a) => !a.visible).length;
   if (hidden) console.log(`  非公開（visible未チェック）の記事: ${hidden}件はスキップ`);
 
-  const articles = all.filter((a) => a.visible);
+  const visible = all.filter((a) => a.visible);
+
+  // 予約中（publishedAt が未来）の記事は、まだ出さない
+  const scheduled = visible.filter((a) => !isReleased(a, now));
+  if (scheduled.length) {
+    console.log(`  予約中の記事: ${scheduled.length}件`);
+    scheduled
+      .sort((a, b) => String(a.publishedAt).localeCompare(String(b.publishedAt)))
+      .forEach((a) => console.log(`    ${a.publishedAt} 公開予定「${a.title}」`));
+  }
+
+  const articles = visible.filter((a) => isReleased(a, now));
   articles.forEach((a) => fillSlug(a, seriesConfig));
 
   // slugの重複はURLが衝突するので、後から来た方に番号を付けて警告する。
@@ -247,4 +280,4 @@ async function fetchArticles({ fixture, seriesConfig = {} } = {}) {
   return articles;
 }
 
-module.exports = { fetchArticles, normalizeRecord, sanitizeSlug };
+module.exports = { fetchArticles, normalizeRecord, sanitizeSlug, isReleased };
