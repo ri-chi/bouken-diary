@@ -43,6 +43,14 @@ module.exports = {
   // コメント欄を出すかどうか（APIを設定していても、コメントだけ止めたいときは false にする）
   comments: true,
 
+  // SNSのアカウント（IDだけを書く。空にすると表示しない）
+  //   x    : Xのユーザー名（@の後ろ）。例: "bouken_diary"
+  //   note : noteのID（note.com/ の後ろ）。例: "bouken_diary"
+  social: {
+    x: "bouken_diary",
+    note: "bouken_diary",
+  },
+
   // 記事一覧でタグとして表示する順番（ここにないタグは後ろに並ぶ）
   tagOrder: ["序盤", "配合", "仲間", "建築", "ボス", "アップデート"],
 };

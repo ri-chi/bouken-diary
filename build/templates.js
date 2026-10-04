@@ -9,6 +9,12 @@ function createTemplates(config) {
   const absUrl = (p = "") => `${config.siteUrl}${url(p)}`;
 
   const seriesConfig = config.series || {};
+  const social = config.social || {};
+  const xId = String(social.x || "").replace(/^@/, "").trim();
+  const noteId = String(social.note || "").trim();
+  const xUrl = xId ? `https://x.com/${encodeURIComponent(xId)}` : "";
+  const noteUrl = noteId ? `https://note.com/${encodeURIComponent(noteId)}` : "";
+
   const articlePath = (article) => `articles/${article.slug}/`;
   const tagPath = (tag) => `tags/${encodeURIComponent(tag)}/`;
   const seriesPath = (name) => {
@@ -68,6 +74,14 @@ function createTemplates(config) {
     const year = new Date().getFullYear();
     return `
     <footer class="site-footer">
+      ${
+        xUrl || noteUrl
+          ? `<nav class="footer-social" aria-label="SNS">
+        ${xUrl ? `<a href="${xUrl}" target="_blank" rel="noopener me">X（@${esc(xId)}）</a>` : ""}
+        ${noteUrl ? `<a href="${noteUrl}" target="_blank" rel="noopener me">note</a>` : ""}
+      </nav>`
+          : ""
+      }
       <nav class="footer-links" aria-label="サイト情報">
         <a href="${url("about/")}">このブログについて</a>
         <a href="${url("privacy/")}">プライバシーポリシー</a>
@@ -113,6 +127,7 @@ function createTemplates(config) {
     <meta property="og:type" content="${ogType}" />
     <meta property="og:url" content="${esc(absUrl(path))}" />
     ${image ? `<meta property="og:image" content="${esc(image)}" />\n    <meta name="twitter:card" content="summary_large_image" />` : '<meta name="twitter:card" content="summary" />'}
+    ${xId ? `<meta name="twitter:site" content="@${esc(xId)}" />` : ""}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet" />
@@ -303,6 +318,22 @@ ${content}
         </div>`;
   }
 
+  // 記事の最後の「Xでお知らせしています」の案内（XのIDが設定されているときだけ）
+  function followBox(article) {
+    if (!xUrl) return "";
+    const what = article.series ? `${article.series}の続き` : "新しい記事";
+    const shareText = encodeURIComponent(`${labeledTitle(article)}｜${config.siteName}`);
+    const shareUrl = encodeURIComponent(absUrl(articlePath(article)));
+    return `
+        <aside class="follow-box" aria-label="Xでのお知らせ">
+          <p class="follow-text">${esc(what)}は、Xでお知らせしています。</p>
+          <p class="follow-links">
+            <a class="follow-link" href="${xUrl}" target="_blank" rel="noopener">▶ @${esc(xId)} をフォロー</a>
+            <a class="follow-link" href="https://x.com/intent/post?text=${shareText}&amp;url=${shareUrl}" target="_blank" rel="noopener">▶ この記事をXでシェア</a>
+          </p>
+        </aside>`;
+  }
+
   // コメント欄（APIのURLが設定されているときだけ）。表示と投稿は assets/comments.js が行う
   function commentSection(article) {
     if (!config.blogApi || config.comments === false) return "";
@@ -362,6 +393,7 @@ ${bodyHtml || '<p class="empty">本文がまだありません。Airtableの bod
         </div>
         ${galleryHtml}
         ${likeButton(article)}
+        ${followBox(article)}
         ${commentSection(article)}
         ${prev || next ? `<nav class="pager" aria-label="前後の記事">
           ${pagerLink(prev, "prev", article.series ? "◀ まえの日" : "◀ まえの記事")}
