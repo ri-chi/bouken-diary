@@ -43,7 +43,7 @@ site.config.js     ブログ名などの設定
 | body（本文） | 長文テキスト | 下の記法で書く |
 | visible（公開） | チェックボックス | チェックした記事だけ公開 |
 | top image（トップ画像） | 添付ファイル | 記事の一番上と一覧のサムネ |
-| image 1 〜 image 10（写真1〜） | 添付ファイル | 本文の【写真1】〜【写真10】に対応 |
+| image 1 〜 image 20（写真1〜） | 添付ファイル | 本文の【写真1】〜【写真20】に対応 |
 
 ### シリーズ（連載）
 
@@ -84,7 +84,7 @@ Airtableの個人アクセストークンは `data.records:read` の権限だけ
 ```
 
 `_文字_` は斜体にならないので、`iron_ingot` のようなアイテムIDもそのまま書けます。
-image 1〜10 に入れたのに本文で使わなかった画像は、記事の最後に「その他のスクショ」として並びます。
+image 1〜20 に入れたのに本文で使わなかった画像は、記事の最後に「その他のスクショ」として並びます。
 
 ## 3. 手元で試す
 
@@ -135,3 +135,38 @@ $env:AIRTABLE_TOKEN="xxx"; $env:AIRTABLE_BASE_ID="appXXX"; npm run build
 ## Cloudflare Pagesへ移るとき
 
 `npm run build` で `dist/` を出力するだけなので、Cloudflare Pages側でビルドコマンドを `npm run build`、出力先を `dist` にして、同じ環境変数を設定すれば移行できます。独自ドメインを使っていれば、DNSの向き先を変えるだけでURLは変わりません。
+
+## いいね・コメント（Cloudflare Workers）
+
+いいねの数とコメントは、`blog-api/` の小さなプログラムを Cloudflare Workers（無料枠）で動かして保存します。
+最初に1回だけ、Macのターミナルで次の手順を行います（コマンドは1行ずつ実行）。
+
+```bash
+cd blog-api
+npm install
+npx wrangler login                    # ブラウザが開くので Cloudflare にログインして許可
+npx wrangler d1 create bouken-api     # 表示された database_id を wrangler.toml に貼る
+npm run db:init                       # テーブルを作る
+npx wrangler secret put SALT          # ランダムな文字列を入力
+npx wrangler secret put ADMIN_TOKEN   # 管理ページのパスワードを入力
+npm run deploy                        # 公開。https://bouken-api.〇〇.workers.dev のURLが表示される
+```
+
+ランダムな文字列は `openssl rand -hex 32` で作れます。SALT と ADMIN_TOKEN には別々の値を使ってください。
+
+表示されたURLを、GitHubの Variables に `BLOG_API` として登録し、Actionsでビルドし直すと、記事にいいねボタンとコメント欄が出ます。
+
+### コメントの管理
+
+`https://bouken-api.〇〇.workers.dev/admin` を開いて ADMIN_TOKEN を入れると、承認待ちのコメントを
+「承認して公開」「返信して公開」「削除」できます。スマホでも使えるので、ホーム画面に追加しておくと便利です。
+
+新しいコメントをDiscordに通知したい場合は、DiscordのチャンネルでWebhookを作り、そのURLを登録します。
+
+```bash
+npx wrangler secret put DISCORD_WEBHOOK_URL
+```
+
+### 設定を変えたとき
+
+`blog-api/` の中身を変えたときは、`npm run deploy` でもう一度公開します（GitHubにpushしただけでは反映されません）。

@@ -36,6 +36,13 @@ module.exports = {
     },
   },
 
+  // いいね・コメントのAPI（Cloudflare Worker のURL）。例: "https://bouken-api.xxxx.workers.dev"
+  // 空なら、いいねボタンとコメント欄を表示しない。
+  blogApi: (process.env.BLOG_API || "").replace(/\/+$/, ""),
+
+  // コメント欄を出すかどうか（APIを設定していても、コメントだけ止めたいときは false にする）
+  comments: true,
+
   // 記事一覧でタグとして表示する順番（ここにないタグは後ろに並ぶ）
   tagOrder: ["序盤", "配合", "仲間", "建築", "ボス", "アップデート"],
 };

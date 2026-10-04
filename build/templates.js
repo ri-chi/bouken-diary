@@ -78,11 +78,24 @@ function createTemplates(config) {
     </footer>`;
   }
 
-  function layout({ title, description, path, ogImage, ogType = "website", content, scripts = [], noindex = false }) {
+  function layout({
+    title,
+    description,
+    path,
+    ogImage,
+    ogType = "website",
+    content,
+    scripts = [],
+    externalScripts = [],
+    noindex = false,
+  }) {
     const fullTitle = title ? `${title}｜${config.siteName}` : config.siteName;
     const desc = description || config.description;
     const image = ogImage ? `${config.siteUrl}${ogImage}` : "";
-    const scriptTags = scripts.map((s) => `<script src="${url(s)}" defer></script>`).join("\n    ");
+    const scriptTags = [
+      ...scripts.map((s) => `<script src="${url(s)}" defer></script>`),
+      ...externalScripts.map((s) => `<script src="${esc(s)}" defer></script>`),
+    ].join("\n    ");
 
     return `<!doctype html>
 <html lang="ja">
@@ -270,6 +283,52 @@ ${content}
           </a>`;
   }
 
+  // いいねボタン（APIのURLが設定されているときだけ）
+  function likeButton(article) {
+    if (!config.blogApi) return "";
+    return `
+        <div class="reactions">
+          <button type="button" class="like-button" data-api="${esc(config.blogApi)}" data-slug="${esc(article.slug)}" aria-pressed="false" disabled>
+            <span class="like-heart" aria-hidden="true">♥</span>
+            <span class="like-label">いいね</span>
+            <span class="like-count" aria-live="polite"></span>
+          </button>
+          <p class="like-message" role="status"></p>
+        </div>`;
+  }
+
+  // コメント欄（APIのURLが設定されているときだけ）。表示と投稿は assets/comments.js が行う
+  function commentSection(article) {
+    if (!config.blogApi || config.comments === false) return "";
+    return `
+        <section class="comments" id="comments" aria-labelledby="comments-heading" data-api="${esc(config.blogApi)}" data-slug="${esc(article.slug)}">
+          <h2 id="comments-heading">コメント</h2>
+          <div class="comment-list" aria-live="polite"><p class="comment-empty">コメントを読み込んでいます…</p></div>
+
+          <form class="comment-form" novalidate>
+            <h3 class="comment-form-title">コメントを書く</h3>
+            <p class="comment-replying" hidden>
+              <span class="comment-replying-text"></span>
+              <button type="button" class="comment-reply-cancel">返信をやめる</button>
+            </p>
+            <p class="comments-note">コメントは確認してから表示します。本名・住所・学校名など、だれかが特定できることは書かないでください。</p>
+            <label class="comment-field">
+              <span>名前（ニックネーム）</span>
+              <input name="name" type="text" maxlength="30" autocomplete="nickname" required />
+            </label>
+            <label class="comment-field">
+              <span>コメント</span>
+              <textarea name="body" rows="5" maxlength="1000" required></textarea>
+            </label>
+            <div class="comment-hp" aria-hidden="true">
+              <label>この欄は空のままにしてください <input name="website" type="text" tabindex="-1" autocomplete="off" /></label>
+            </div>
+            <button type="submit" class="comment-submit">コメントを送る</button>
+            <p class="comment-status" role="status"></p>
+          </form>
+        </section>`;
+  }
+
   function articlePage({ article, bodyHtml, tocHtml, galleryHtml, prev, next }) {
     const hero = article.topImage
       ? `<figure class="article-hero"><img src="${esc(article.topImage.src)}" width="${article.topImage.width}" height="${article.topImage.height}" alt="" decoding="async" fetchpriority="high" /></figure>`
@@ -296,6 +355,8 @@ ${content}
 ${bodyHtml || '<p class="empty">本文がまだありません。Airtableの body 列に書くとここに表示されます。</p>'}
         </div>
         ${galleryHtml}
+        ${likeButton(article)}
+        ${commentSection(article)}
         ${prev || next ? `<nav class="pager" aria-label="前後の記事">
           ${pagerLink(prev, "prev", article.series ? "◀ まえの日" : "◀ まえの記事")}
           ${pagerLink(next, "next", article.series ? "つぎの日 ▶" : "つぎの記事 ▶")}
@@ -309,7 +370,11 @@ ${bodyHtml || '<p class="empty">本文がまだありません。Airtableの bod
       ogImage: article.topImage ? article.topImage.src : article.gallery[0] && article.gallery[0].src,
       ogType: "article",
       content,
-      scripts: ["assets/caption.js"],
+      scripts: [
+        "assets/caption.js",
+        ...(config.blogApi ? ["assets/likes.js"] : []),
+        ...(config.blogApi && config.comments !== false ? ["assets/comments.js"] : []),
+      ],
     });
   }
 

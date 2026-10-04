@@ -1,0 +1,23 @@
+# ぼうけん日記の API（いいね・コメント）用 Worker の設定
+name = "bouken-api"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+
+# 「npx wrangler d1 create bouken-api」で表示された database_id を下に貼る
+[[d1_databases]]
+binding = "DB"
+database_name = "bouken-api"
+database_id = "633a1433-cf47-4b73-9b92-35af13b5c8ef"
+
+[vars]
+# いいね・コメントを受け付けるサイト（カンマ区切り）。手元確認用に localhost も許可している
+ALLOWED_ORIGINS = "https://bouken-diary.com,https://www.bouken-diary.com,http://localhost:3000"
+# 実在する記事かどうかの確認と、管理ページから記事を開くのに使う
+SITE_URL = "https://bouken-diary.com"
+# コメントの返信に表示する、ブログ主の名前
+ADMIN_NAME = "ブログ主"
+
+# 秘密の値は wrangler secret put で登録する（ここには書かない）
+#   SALT                 : IPアドレスをハッシュ化するときに混ぜる文字列
+#   ADMIN_TOKEN          : 管理ページのパスワード
+#   DISCORD_WEBHOOK_URL  : （任意）新しいコメントをDiscordに通知する

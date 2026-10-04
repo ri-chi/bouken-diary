@@ -30,6 +30,10 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   background: var(--paper);
@@ -52,6 +56,8 @@ a {
 }
 
 a:focus-visible,
+button:focus-visible,
+textarea:focus-visible,
 input:focus-visible {
   outline: 3px solid var(--gold);
   outline-offset: 2px;
@@ -610,6 +616,282 @@ main {
   aspect-ratio: 16 / 9;
   object-fit: cover;
   border-radius: 3px;
+}
+
+/* いいね */
+.reactions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin: 3rem 0 0;
+}
+
+.like-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 1.1rem;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.like-button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.like-heart {
+  color: var(--line);
+  font-size: 1.15rem;
+  line-height: 1;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.like-button[aria-pressed="true"] {
+  background: var(--window);
+  border-color: var(--window);
+  color: var(--window-text);
+}
+
+.like-button[aria-pressed="true"] .like-heart {
+  color: var(--gold);
+  transform: scale(1.15);
+}
+
+.like-button:not(:disabled):hover {
+  border-color: var(--grass);
+}
+
+.like-count {
+  font-family: var(--font-pixel);
+  min-width: 1ch;
+}
+
+.like-message {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* コメント */
+.comments {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--line);
+}
+
+.comments h2 {
+  font-size: 1.25rem;
+  margin: 0 0 1rem;
+}
+
+.comment-empty {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.comment-thread,
+.comment-replies {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.comment {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.85rem 1rem 0.6rem;
+  margin-bottom: 0.9rem;
+}
+
+.comment-replies {
+  margin: 0.75rem 0 0.25rem;
+  padding-left: 1rem;
+  border-left: 2px solid var(--line);
+}
+
+.comment.is-reply {
+  margin-bottom: 0.6rem;
+}
+
+/* ブログ主の返信は、ドラクエのメッセージウィンドウで */
+.comment.is-admin {
+  background: var(--window);
+  color: var(--window-text);
+  border: 3px solid var(--window-text);
+  border-radius: 10px;
+  box-shadow: 0 0 0 3px var(--window);
+  margin-left: 3px;
+}
+
+.comment-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.1rem 0.6rem;
+  margin: 0 0 0.3rem;
+}
+
+.comment-name {
+  font-weight: 700;
+}
+
+.comment-badge {
+  font-family: var(--font-pixel);
+  font-size: 0.75rem;
+  background: var(--gold);
+  color: var(--window);
+  padding: 0 0.4rem;
+  border-radius: 3px;
+}
+
+.comment-date {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.comment.is-admin .comment-date {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.comment-body {
+  margin: 0 0 0.4rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 0.97rem;
+  line-height: 1.8;
+}
+
+.comment-reply-button {
+  border: 0;
+  background: none;
+  padding: 0.2rem 0;
+  font: inherit;
+  font-size: 0.82rem;
+  color: var(--grass);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.comment.is-admin .comment-reply-button {
+  color: var(--gold);
+}
+
+/* 投稿フォーム */
+.comment-form {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 2rem;
+  padding: 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.comment-form-title {
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.comments-note {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.7;
+}
+
+.comment-replying {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  background: var(--paper);
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.comment-replying[hidden] {
+  display: none;
+}
+
+.comment-reply-cancel {
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+.comment-field {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+}
+
+.comment-field input,
+.comment-field textarea {
+  font: inherit;
+  font-size: 1rem; /* iPhoneで入力時に拡大されないよう16px以上にする */
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  width: 100%;
+}
+
+.comment-field textarea {
+  resize: vertical;
+  min-height: 7rem;
+}
+
+/* ボット対策の見えない入力欄 */
+.comment-hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.comment-submit {
+  justify-self: start;
+  font: inherit;
+  padding: 0.6rem 1.4rem;
+  border: 2px solid var(--window);
+  border-radius: 999px;
+  background: var(--window);
+  color: var(--window-text);
+  cursor: pointer;
+}
+
+.comment-submit:hover {
+  color: var(--gold);
+}
+
+.comment-submit:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.comment-status {
+  margin: 0;
+  min-height: 1.5em;
+  font-size: 0.9rem;
+  color: var(--ink);
 }
 
 /* 前後の日記：ドラクエのコマンド選択風。フォーカス時に ▶ が金色になる */

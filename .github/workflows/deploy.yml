@@ -60,6 +60,7 @@ jobs:
           CUSTOM_DOMAIN: ${{ vars.CUSTOM_DOMAIN }}
           GA_ID: ${{ vars.GA_ID }}
           ADSENSE_CLIENT: ${{ vars.ADSENSE_CLIENT }}
+          BLOG_API: ${{ vars.BLOG_API }}
 
       - uses: actions/configure-pages@v5
 
