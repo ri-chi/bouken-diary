@@ -388,9 +388,7 @@ ${content}
   }
 
   function articlePage({ article, bodyHtml, tocHtml, galleryHtml, prev, next }) {
-    const hero = article.topImage
-      ? `<figure class="article-hero"><img src="${esc(article.topImage.src)}" width="${article.topImage.width}" height="${article.topImage.height}" alt="" decoding="async" fetchpriority="high" /></figure>`
-      : "";
+    // top image は記事ページには出さず、一覧のサムネイルとリンク画像（OGP）にだけ使う
 
     const meta = [
       `<time datetime="${isoDate(article.publishedAt)}">${formatDate(article.publishedAt)}</time>`,
@@ -407,7 +405,6 @@ ${content}
           <p class="article-meta">${meta}</p>
         </header>
         ${tagLinks(article.tags)}
-        ${hero}
         ${tocHtml}
         <div class="body">
 ${bodyHtml || '<p class="empty">本文がまだありません。Airtableの body 列に書くとここに表示されます。</p>'}
