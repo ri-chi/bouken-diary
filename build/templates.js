@@ -371,6 +371,22 @@ ${content}
         </section>`;
   }
 
+  // 同じシリーズの前後の記事へのリンク（コメント欄の上に置く）
+  function pager(article, prev, next) {
+    if (!prev && !next) return "";
+    const seriesLink = article.series
+      ? `<p class="pager-series"><a href="${url(seriesPath(article.series))}">${esc(article.series)}の日記一覧を見る</a></p>`
+      : "";
+    return `
+        <nav class="pager-wrap" aria-label="前後の記事">
+          <div class="pager">
+            ${pagerLink(prev, "prev", article.series ? "◀ まえの日" : "◀ まえの記事")}
+            ${pagerLink(next, "next", article.series ? "つぎの日 ▶" : "つぎの記事 ▶")}
+          </div>
+          ${seriesLink}
+        </nav>`;
+  }
+
   function articlePage({ article, bodyHtml, tocHtml, galleryHtml, prev, next }) {
     const hero = article.topImage
       ? `<figure class="article-hero"><img src="${esc(article.topImage.src)}" width="${article.topImage.width}" height="${article.topImage.height}" alt="" decoding="async" fetchpriority="high" /></figure>`
@@ -399,11 +415,8 @@ ${bodyHtml || '<p class="empty">本文がまだありません。Airtableの bod
         ${galleryHtml}
         ${likeButton(article)}
         ${followBox(article)}
+        ${pager(article, prev, next)}
         ${commentSection(article)}
-        ${prev || next ? `<nav class="pager" aria-label="前後の記事">
-          ${pagerLink(prev, "prev", article.series ? "◀ まえの日" : "◀ まえの記事")}
-          ${pagerLink(next, "next", article.series ? "つぎの日 ▶" : "つぎの記事 ▶")}
-        </nav>` : ""}
       </article>`;
 
     return layout({

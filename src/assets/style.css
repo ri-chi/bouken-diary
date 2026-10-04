@@ -938,13 +938,20 @@ main {
 }
 
 /* 前後の日記：ドラクエのコマンド選択風。フォーカス時に ▶ が金色になる */
+.pager-wrap {
+  margin-top: 2.5rem;
+}
+
 .pager {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  margin-top: 3.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--line);
+}
+
+.pager-series {
+  margin: 0.75rem 0 0;
+  text-align: center;
+  font-size: 0.9rem;
 }
 
 .pager-link {
