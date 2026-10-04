@@ -32,6 +32,15 @@ function parseArgs(argv) {
   return args;
 }
 
+async function fileExists(file) {
+  try {
+    await fs.access(file);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function writePage(relPath, html) {
   const file = path.join(OUT_DIR, relPath);
   await fs.mkdir(path.dirname(file), { recursive: true });
@@ -120,6 +129,9 @@ function sitemapXml(entries, templates) {
 async function main() {
   const started = Date.now();
   const args = parseArgs(process.argv.slice(2));
+  // src/assets に ogp.png / icon.png があれば、リンク画像とアイコンに使う
+  config.defaultOgImage = (await fileExists(path.join(SRC_DIR, "assets", "ogp.png"))) ? "assets/ogp.png" : "";
+  config.iconImage = (await fileExists(path.join(SRC_DIR, "assets", "icon.png"))) ? "assets/icon.png" : "";
   const templates = createTemplates(config);
   const renderer = createBodyRenderer({ basePath: config.basePath });
 

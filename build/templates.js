@@ -91,7 +91,9 @@ function createTemplates(config) {
   }) {
     const fullTitle = title ? `${title}｜${config.siteName}` : config.siteName;
     const desc = description || config.description;
-    const image = ogImage ? `${config.siteUrl}${ogImage}` : "";
+    // 記事の画像がなければ、サイト共通のリンク画像（src/assets/ogp.png）を使う
+    const imagePath = ogImage || (config.defaultOgImage ? url(config.defaultOgImage) : "");
+    const image = imagePath ? `${config.siteUrl}${imagePath}` : "";
     const scriptTags = [
       ...scripts.map((s) => `<script src="${url(s)}" defer></script>`),
       ...externalScripts.map((s) => `<script src="${esc(s)}" defer></script>`),
@@ -115,7 +117,11 @@ function createTemplates(config) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="${url("assets/style.css")}" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗡️</text></svg>" />
+    ${
+      config.iconImage
+        ? `<link rel="icon" type="image/png" href="${url(config.iconImage)}" />\n    <link rel="apple-touch-icon" href="${url(config.iconImage)}" />`
+        : '<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗡️</text></svg>" />'
+    }
     ${analyticsTags()}
     ${scriptTags}
   </head>
