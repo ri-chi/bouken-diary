@@ -5,7 +5,7 @@
 const fs = require("fs/promises");
 const path = require("path");
 
-const MAX_IMAGE_SLOTS = 10;
+const MAX_IMAGE_SLOTS = 20;
 
 // ---------------------------------------------------------------
 // フィールド名のゆれ吸収（元コードから流用）
