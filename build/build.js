@@ -41,6 +41,32 @@ async function fileExists(file) {
   }
 }
 
+// icon.png から、Google検索などが使うサイズのアイコンを作る
+//   favicon.ico（48px・サイトの一番上） / icon-48・96・192.png / apple-touch-icon.png（180px）
+async function writeFavicons(iconFile) {
+  const sharp = require("sharp");
+  const sizes = { "icon-48.png": 48, "icon-96.png": 96, "icon-192.png": 192, "apple-touch-icon.png": 180 };
+  for (const [name, size] of Object.entries(sizes)) {
+    await sharp(iconFile).resize(size, size).png().toFile(path.join(OUT_DIR, "assets", name));
+  }
+
+  // favicon.ico は、中身がPNGのICO形式で作る（1枚・48px）
+  const png = await sharp(iconFile).resize(48, 48).png().toBuffer();
+  const header = Buffer.alloc(22);
+  header.writeUInt16LE(0, 0); // 予約
+  header.writeUInt16LE(1, 2); // 種類: アイコン
+  header.writeUInt16LE(1, 4); // 画像の数
+  header.writeUInt8(48, 6); // 幅
+  header.writeUInt8(48, 7); // 高さ
+  header.writeUInt8(0, 8); // 色数
+  header.writeUInt8(0, 9); // 予約
+  header.writeUInt16LE(1, 10); // カラープレーン
+  header.writeUInt16LE(32, 12); // ビット数
+  header.writeUInt32LE(png.length, 14); // データの大きさ
+  header.writeUInt32LE(22, 18); // データの開始位置
+  await fs.writeFile(path.join(OUT_DIR, "favicon.ico"), Buffer.concat([header, png]));
+}
+
 async function writePage(relPath, html) {
   const file = path.join(OUT_DIR, relPath);
   await fs.mkdir(path.dirname(file), { recursive: true });
@@ -238,6 +264,9 @@ async function main() {
 
   // CSS・JS
   await fs.cp(path.join(SRC_DIR, "assets"), path.join(OUT_DIR, "assets"), { recursive: true });
+
+  // アイコンから、検索結果やスマホのホーム画面用のサイズを作る
+  if (config.iconImage) await writeFavicons(path.join(SRC_DIR, "assets", "icon.png"));
 
   const seconds = ((Date.now() - started) / 1000).toFixed(1);
   console.log(`✔ 完了（${seconds}秒）→ dist/`);

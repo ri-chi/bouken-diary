@@ -134,7 +134,12 @@ function createTemplates(config) {
     <link rel="stylesheet" href="${url("assets/style.css")}" />
     ${
       config.iconImage
-        ? `<link rel="icon" type="image/png" href="${url(config.iconImage)}" />\n    <link rel="apple-touch-icon" href="${url(config.iconImage)}" />`
+        ? [
+            `<link rel="icon" href="${url("favicon.ico")}" sizes="48x48" />`,
+            `<link rel="icon" type="image/png" sizes="96x96" href="${url("assets/icon-96.png")}" />`,
+            `<link rel="icon" type="image/png" sizes="192x192" href="${url("assets/icon-192.png")}" />`,
+            `<link rel="apple-touch-icon" sizes="180x180" href="${url("assets/apple-touch-icon.png")}" />`,
+          ].join("\n    ")
         : '<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗡️</text></svg>" />'
     }
     ${analyticsTags()}
