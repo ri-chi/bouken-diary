@@ -992,6 +992,34 @@ main {
   color: var(--gold);
 }
 
+/* 手元のプレビュー用 */
+.preview-strip {
+  margin: 0;
+  padding: 0.4rem 1rem;
+  background: var(--gold);
+  color: var(--window);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.preview-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0 0.45rem;
+  border: 1px dashed var(--ink);
+  border-radius: 3px;
+  color: var(--ink);
+}
+
+.preview-banner {
+  margin: 0 0 1rem;
+  padding: 0.6rem 0.9rem;
+  border: 2px dashed var(--gold);
+  border-radius: 6px;
+  background: var(--surface);
+  font-size: 0.9rem;
+}
+
 /* 404 */
 .not-found {
   max-width: var(--measure);

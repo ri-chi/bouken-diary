@@ -112,6 +112,21 @@ AIRTABLE_TOKEN=xxx AIRTABLE_BASE_ID=appXXX npm run build
 $env:AIRTABLE_TOKEN="xxx"; $env:AIRTABLE_BASE_ID="appXXX"; npm run build
 ```
 
+### 下書き・予約中の記事を手元で確認する（プレビュー）
+
+1. `.env.example` をコピーして `.env` という名前にし、Airtableのトークンとベースを入れる（最初の1回だけ）
+2. ターミナルで次を実行する
+
+```bash
+npm run preview
+```
+
+3. ブラウザで `http://localhost:3000` を開く。止めるときはターミナルで Control＋C
+
+`visible` が付いていない記事や、`publishedAt` が未来の記事も表示され、「下書き（非公開）」「予約中」の目印が付きます。
+プレビューは自分のMacの中だけで表示され、本番のブログには影響しません。
+いいね・コメント・アクセス解析は、プレビューでは動きません（本物のデータが増えないようにするため）。
+
 ## 4. GitHub Pagesで公開する
 
 1. このフォルダをGitHubのリポジトリにpushする

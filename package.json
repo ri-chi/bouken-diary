@@ -6,7 +6,9 @@
   "scripts": {
     "build": "node build/build.js",
     "build:sample": "node build/build.js --fixture fixtures/sample.json",
-    "serve": "npx --yes serve dist"
+    "serve": "npx --yes serve dist",
+    "preview": "node build/build.js --drafts && npx --yes serve preview -l 3000",
+    "preview:sample": "node build/build.js --drafts --fixture fixtures/sample.json && npx --yes serve preview -l 3000"
   },
   "engines": {
     "node": ">=20"

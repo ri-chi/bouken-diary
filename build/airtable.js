@@ -233,7 +233,9 @@ function isReleased(article, now = new Date()) {
   return Number.isNaN(time) ? true : time <= now.getTime();
 }
 
-async function fetchArticles({ fixture, seriesConfig = {}, now = new Date() } = {}) {
+// includeDrafts: true のとき（手元のプレビュー用）は、非公開・予約中の記事も含めて返す。
+// その場合、記事に status（"draft" / "scheduled" / "published"）を付ける。
+async function fetchArticles({ fixture, seriesConfig = {}, now = new Date(), includeDrafts = false } = {}) {
   let records;
   if (fixture) {
     console.log(`  サンプルデータを使用: ${fixture}`);
@@ -246,8 +248,17 @@ async function fetchArticles({ fixture, seriesConfig = {}, now = new Date() } = 
   }
 
   const all = records.map(normalizeRecord);
+  all.forEach((a) => {
+    a.status = !a.visible ? "draft" : isReleased(a, now) ? "published" : "scheduled";
+  });
   const hidden = all.filter((a) => !a.visible).length;
-  if (hidden) console.log(`  非公開（visible未チェック）の記事: ${hidden}件はスキップ`);
+  if (hidden) {
+    console.log(
+      includeDrafts
+        ? `  非公開（visible未チェック）の記事: ${hidden}件（プレビューなので表示します）`
+        : `  非公開（visible未チェック）の記事: ${hidden}件はスキップ`
+    );
+  }
 
   const visible = all.filter((a) => a.visible);
 
@@ -260,7 +271,7 @@ async function fetchArticles({ fixture, seriesConfig = {}, now = new Date() } = 
       .forEach((a) => console.log(`    ${a.publishedAt} 公開予定「${a.title}」`));
   }
 
-  const articles = visible.filter((a) => isReleased(a, now));
+  const articles = includeDrafts ? all : visible.filter((a) => isReleased(a, now));
   articles.forEach((a) => fillSlug(a, seriesConfig));
 
   // slugの重複はURLが衝突するので、後から来た方に番号を付けて警告する。

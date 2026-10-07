@@ -147,6 +147,7 @@ function createTemplates(config) {
   </head>
   <body>
     <a class="skip-link" href="#main">本文へ移動</a>
+    ${config.preview ? '<p class="preview-strip">手元のプレビューです（下書き・予約中の記事も表示しています）</p>' : ""}
     ${header()}
     <main id="main">
 ${content}
@@ -155,6 +156,14 @@ ${content}
   </body>
 </html>
 `;
+  }
+
+  // プレビュー用：非公開・予約中の記事の目印
+  function statusLabel(article) {
+    if (!config.preview) return "";
+    if (article.status === "draft") return "下書き（非公開）";
+    if (article.status === "scheduled") return `予約中（${formatDate(article.publishedAt)}に公開）`;
+    return "";
   }
 
   // 「12日目」。日目のない記事は空文字。
@@ -199,7 +208,7 @@ ${content}
           <a class="entry-link" href="${url(articlePath(article))}">
             <span class="entry-thumb">${thumb}</span>
             <span class="entry-text">
-              ${day || meta ? `<span class="entry-labels">${day ? `<span class="entry-day">${esc(day)}</span>` : ""}${meta}</span>` : ""}
+              ${day || meta || statusLabel(article) ? `<span class="entry-labels">${day ? `<span class="entry-day">${esc(day)}</span>` : ""}${meta}${statusLabel(article) ? `<span class="preview-badge">${esc(statusLabel(article))}</span>` : ""}</span>` : ""}
               <span class="entry-title">${esc(article.title)}</span>
               ${article.excerpt ? `<span class="entry-excerpt">${esc(article.excerpt)}</span>` : ""}
               <time class="entry-date" datetime="${isoDate(article.publishedAt)}">${formatDate(article.publishedAt)}</time>
@@ -399,6 +408,7 @@ ${content}
 
     const content = `
       <article class="article">
+        ${statusLabel(article) ? `<p class="preview-banner">${esc(statusLabel(article))}：この記事はまだ公開されていません。</p>` : ""}
         <header class="article-header msg-window">
           ${fullLabel(article) ? `<p class="article-day">${article.series ? `<a href="${url(seriesPath(article.series))}">${esc(article.series)}</a>` : ""}${dayLabel(article) ? `<span>${esc(dayLabel(article))}</span>` : ""}</p>` : ""}
           <h1 class="article-title">${esc(article.title)}</h1>

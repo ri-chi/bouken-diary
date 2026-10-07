@@ -19,9 +19,28 @@ const { createBodyRenderer, bodyToPlainText } = require("./render-body");
 const { createTemplates } = require("./templates");
 
 const ROOT = path.resolve(__dirname, "..");
-const OUT_DIR = path.join(ROOT, "dist");
+// 手元のプレビュー（--drafts）のときは、本番用の dist/ ではなく preview/ に書き出す
+const DRAFTS = process.argv.includes("--drafts");
+const OUT_DIR = path.join(ROOT, DRAFTS ? "preview" : "dist");
 const SRC_DIR = path.join(ROOT, "src");
 const CACHE_DIR = path.join(ROOT, ".cache", "images");
+
+// .env ファイル（手元のプレビュー用）があれば、その中の値を環境変数として読み込む。
+// .env は .gitignore に入っているので、GitHubには上がらない。
+function loadDotEnv() {
+  const file = path.join(ROOT, ".env");
+  let text;
+  try {
+    text = require("fs").readFileSync(file, "utf8");
+  } catch {
+    return;
+  }
+  for (const line of text.split(/\r?\n/)) {
+    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/);
+    if (!m || process.env[m[1]]) continue;
+    process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
+  }
+}
 
 function parseArgs(argv) {
   const args = {};
@@ -155,6 +174,18 @@ function sitemapXml(entries, templates) {
 async function main() {
   const started = Date.now();
   const args = parseArgs(process.argv.slice(2));
+
+  if (DRAFTS) {
+    loadDotEnv();
+    // プレビューでは、本物のいいね・コメント・アクセス解析・広告を動かさない
+    config.blogApi = "";
+    config.gaId = "";
+    config.adsenseClient = "";
+    config.siteUrl = "http://localhost:3000";
+    config.basePath = "/";
+    config.preview = true;
+    console.log("▶ プレビューモード（非公開・予約中の記事も含めて preview/ に書き出します）");
+  }
   // src/assets に ogp.png / icon.png があれば、リンク画像とアイコンに使う
   config.defaultOgImage = (await fileExists(path.join(SRC_DIR, "assets", "ogp.png"))) ? "assets/ogp.png" : "";
   config.iconImage = (await fileExists(path.join(SRC_DIR, "assets", "icon.png"))) ? "assets/icon.png" : "";
@@ -162,7 +193,11 @@ async function main() {
   const renderer = createBodyRenderer({ basePath: config.basePath });
 
   console.log("▶ 記事を取得しています");
-  const rawArticles = await fetchArticles({ fixture: args.fixture, seriesConfig: config.series || {} });
+  const rawArticles = await fetchArticles({
+    fixture: args.fixture,
+    seriesConfig: config.series || {},
+    includeDrafts: DRAFTS,
+  });
   console.log(`  公開記事: ${rawArticles.length}件`);
 
   console.log("▶ 出力フォルダを準備しています");
@@ -269,7 +304,8 @@ async function main() {
   if (config.iconImage) await writeFavicons(path.join(SRC_DIR, "assets", "icon.png"));
 
   const seconds = ((Date.now() - started) / 1000).toFixed(1);
-  console.log(`✔ 完了（${seconds}秒）→ dist/`);
+  console.log(`✔ 完了（${seconds}秒）→ ${DRAFTS ? "preview/" : "dist/"}`);
+  if (DRAFTS) console.log("  ブラウザで http://localhost:3000 を開いて確認できます（止めるときは Control＋C）");
 }
 
 main().catch((error) => {
